@@ -1,0 +1,11 @@
+# Managed by Puppet (dcache)
+# Do NOT edit, changes will be overwritten!
+
+/var/log/dcache/*.log {
+     compress
+     size 2G
+     rotate 12
+     missingok
+     copytruncate
+}
+

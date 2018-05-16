@@ -1,0 +1,371 @@
+#!/usr/bin/perl -w
+#
+# $Id: clear_wal_dir,v 1.2 2009/02/01 21:17:08 lusine Exp $
+#
+
+use strict;
+use DBI;
+use Time::Local;
+use warnings;
+use FileHandle;
+use POSIX qw(strftime);
+use Mail::Send;
+
+my $instanz_name=shift;
+my $version_name=shift;
+
+if(!$instanz_name){
+	print "Usage: $0 <instanz_name> <version_name>\n";
+	exit 1;}
+else{  
+	if(!$version_name){
+        print "Usage: $0 <instanz_name> <version_name> \n";
+        exit 1;
+        }
+}
+
+my @contents;
+my @backup_contents;
+my @wal_contents;
+my @all_contents;
+my $backup_item;
+my @tar_contents;
+my %attr = (PrintError => 1,
+	    RaiseError => 0);
+
+my ($username) = 'postgres';
+
+my ($password) = "";
+
+my ($compress) = 9;
+
+my ($pgsqldir) = '/var/lib/pgsql';
+
+my ($datadir) = '/var/lib/pgsql/'.$version_name.'/data';
+
+my ($backupdir) = '/postgres-wal-archive';
+
+my ($archivestatusdir);
+if ( $version_name == "10"){
+    $archivestatusdir = $datadir.'/pg_wal/archive_status';
+}
+else {
+    $archivestatusdir = $datadir.'/pg_xlog/archive_status';
+}
+
+my ($label) = 'pg_backup_' . strftime("%Y%m%d_%H%M%S", localtime(time));
+
+my ($database) = 'postgres';
+
+my ($mailMessage) = $instanz_name.' - PG Backup failed';
+
+my ($port) = '5432';
+
+my ($command) = 'su - '.$username.' -c "tar -cvf '.$backupdir.'/'.$label.'.tar '.$version_name.'/data --exclude '.$version_name.'/data/pg_xlog/lost+found --exclude '.$version_name.'/data/archive --warning=no-file-changed --warning=no-file-removed"';
+print $command;
+#exit 0; 
+
+my ($db) = undef;
+
+
+   my ($retval) = 0;
+   ## Check if backup directory exists
+   unless ($backupdir)
+   {
+      mailToDot($mailMessage,'Backup directory '.$backupdir.' does not exist\n');
+	   print "no backup directory specified.\n";
+      exit 1;
+   }
+
+
+   ## Check data dir exists
+   unless (-f $datadir. '/postmaster.pid' )
+   {
+      print "PID file '%s' does not exist\nIs server running?\n",
+         $datadir . '/postmaster.pid';
+   	 mailToDot($mailMessage,'PID file '.$datadir . '/postmaster.pid does not exist\nIs server running?\n');
+         
+      exit 1;
+   }
+
+   ## Connect to the postgres database
+   $db = DBI->connect('DBI:Pg:dbname=' . $database . ' port=' . $port,
+      $username, $password,
+      { AutoCommit => 0, RaiseError => 0, PrintError => 0 })
+      or die $DBI::errstr;
+
+
+   ## Perform the backup
+   $retval = hotbackup ();
+   
+
+
+   ## Bye
+   $db->commit();
+   $db->disconnect();
+
+   if ($retval>1){
+	   print("main: Backup failed!!!");
+	   mailToDot($mailMessage,'DB file system backup failed. RETVAL: $retval');
+	   #exit 1;
+   }
+
+   my $alllistitem;
+my $end_wal = "";
+
+my $tar_name;
+my $wal_backup_name;
+
+
+opendir MYDIR, $backupdir;
+
+@all_contents = readdir MYDIR;
+
+#@backup_contents = grep /^.*\.['backup']+/,@all_contents;#nur backup-enthaltende files: backupNNtar.gz, MM.KK.backup
+
+#@wal_contents = grep !/[\.\.\.'backup']/,@all_contents;#nur wal-logs
+
+#@tar_contents = grep /^.*\.['tar']+/,@all_contents;#nur tar-filess
+
+@backup_contents = grep /\.backup(?!.*tar)/,@all_contents;#nur MM.KK.backup
+
+@wal_contents = grep /(?!.*tar)(.+\.bz2)/,@all_contents;#nur wal-logs
+
+@tar_contents = grep /tar/,@all_contents;#nur tar-filess
+
+
+$tar_name = getTarName();
+my @currentTarName;
+$currentTarName[0] = "";
+@currentTarName = grep /$tar_name/, @tar_contents;
+my $item = "undefined";
+foreach my $myitem ( @currentTarName ){
+	$item = $myitem;
+	print $item.':.$tar_name"\n"';
+}
+if ($item ne "undefined"){
+
+		print $item.'-'.$tar_name."\n";
+		$wal_backup_name = getBackupWalName();
+		
+		$end_wal = $wal_backup_name;
+		
+		print $end_wal." It's a important wal-file!\n";	
+		
+		
+		#begin_of_comment
+		
+		#my $comment = q{
+		foreach $backup_item ( @backup_contents ){
+			
+							
+				if ($backup_item ne $wal_backup_name){
+					print $backup_item." ".$wal_backup_name." It's an old backup-file!\n";
+				unlink $backupdir."/".$backup_item;
+				}else{
+					print $backup_item." It's a backup-file!\n";
+				}
+					
+				
+		}
+		
+		foreach my $wal_item ( @wal_contents ){
+			print $wal_item." It's a wal-file!\n";
+			if ($wal_item lt $end_wal){
+				unlink $backupdir."/".$wal_item;
+			}		
+		}
+		foreach my $tar_item ( @tar_contents ){
+			print $tar_item."It's a tar-file!\n";
+			print $tar_name."It's a tar-name!\n";
+			my $count_right_backup = 0;
+			if ($tar_item ne $tar_name){
+				print $tar_item." It's a tar-file!\n";
+				unlink $backupdir."/".$tar_item;
+			}else{
+				print $tar_item." It's a right tar-file!\n";
+				$count_right_backup = $count_right_backup +1;
+			}
+			
+			
+							
+		}
+		my $tar_ok = createLastTar($end_wal,$tar_name);
+		if($tar_ok){ 
+			createLastBzip($tar_name);
+		}
+		#createLastTar($end_wal,$tar_name);
+		#};#end_of_comment
+	
+
+
+}
+closedir MYDIR;
+#------------------------------------------------------------------------------------------------		
+sub getTarName{
+	
+	return $label.".tar";
+	
+}
+#------------------------------------------------------------------------------------------------
+sub getBackupWalName{
+my $wal_item = "";
+
+	unless (-d $archivestatusdir){
+		print "there is a no archive_status directory.\n";
+		mailToDot($mailMessage,'Archive directory '.$archivestatusdir.' does not exist\n');
+		exit 1;
+	}
+	
+	opendir ARCHIVE_STATUS, $archivestatusdir;
+	my @archive_backup = grep /backup/,readdir ARCHIVE_STATUS;
+        foreach my $intwal_item ( @archive_backup ){
+		if ($intwal_item gt $wal_item){
+			print $intwal_item." archive_status\n";
+			$wal_item = $intwal_item;
+		}
+	 
+	}
+	closedir ARCHIVE_STATUS;
+        print substr($wal_item, 0, 24)." Das wal-file!\n";
+	return substr($wal_item, 0, 24).".bz2";
+	
+}
+#------------------------------------------------------------------------------------------------
+## Start the backup
+sub pg_start_backup
+{
+   my ($st);
+
+   $st = $db->prepare("
+      SELECT pg_start_backup(?)
+   ");
+     
+
+   $st->execute($label)||mailToDot($mailMessage," Cannot execute backup start :" . $st->errstr());
+      
+      print $label."    label\n";
+   $st->finish();
+}
+
+#------------------------------------------------------------------------------------------------
+## Stop the backup
+sub pg_stop_backup
+{
+   my ($st);
+   my $err = "";
+
+   $st = $db->prepare("
+      SELECT pg_stop_backup()
+   ");
+      
+
+   $st->execute()||mailToDot($mailMessage," Cannot execute backup stop :" . $st->errstr());
+      
+      print $label."    label\n";
+
+   $st->finish();
+}
+
+#------------------------------------------------------------------------------------------------
+## Do the hot backup
+sub hotbackup
+{
+   my ($cmd) = $command;
+   
+   pg_start_backup ();
+
+   my ($retval) = system ($cmd);
+   print $retval."   das ist der retval\n";
+   pg_stop_backup ();
+
+   return ($retval >> 8);
+}
+
+#------------------------------------------------------------------------------------------------
+sub mailToDot
+{
+my $subj = $_[0];
+my $msgText = $_[1];
+
+
+my $mailprog = 'sendmail'; # Spezifiziert den Typ
+
+my $msg = Mail::Send->new() || die $!;
+
+	# Absender
+$msg->set('From','bitbucket@desy.de');
+
+	# Empfänger
+$msg->to('christian.voss@desy.de');
+
+	# Noch ein Empfänger
+# $msg->add('To', 'dot-ops@desy.de');
+
+	# Betreff	
+$msg->subject($subj);
+
+	# Starte Mailprogramm und gib schon mal die Header aus
+my $fh = $msg->open($mailprog) || die $!;
+
+	# Nachrichtenkörper
+my $message = $msgText;	
+
+	# Schicke den Nachrichtenkörper an das Mailprogramm
+print $fh $message;
+
+	# Schicke die Nachricht ab
+$fh->close() || die $!;
+
+}
+#------------------------------------------------------------------------------------------------
+sub createLastTar
+{
+
+    my ($cmd) = "tar -rvf ".$backupdir.'/'.$_[1].' '.$backupdir.'/'.$_[0];
+    print $cmd.' der letzter tar\n';
+    
+    
+    my ($retval) = system ($cmd);
+    if ($retval!=0){
+    	   print("createLastTar: Backup failed!!!");
+    	   mailToDot($mailMessage,'WAL file adding to file system backup failed');
+	   return 0;
+    	   
+   }
+   return 1;
+}
+#------------------------------------------------------------------------------------------------
+sub createLastBzip
+{
+
+    my ($cmd) = "pbzip2 -p10 ".$backupdir.'/'.$_[0];
+    print $cmd.' der letzter bzip\n';
+    
+    
+    my ($retval) = system ($cmd);
+    if ($retval!=0){
+    	   print("createLastBzip: Backup failed!!!");
+    	   mailToDot($mailMessage,'tar to tar.bz2 failed');
+	   return 0;
+    	   
+   }
+   return 1;
+}
+
+#------------------------------------------------------------------------------------------------
+#sub createLastTar
+#{
+#    my ($cmd) = "tar -rvf ".$backupdir.'/'.$_[1].' '.$backupdir.'/'.$_[0];
+#    print $cmd.' der letzter tar\n';
+#    
+#    
+#    my ($retval) = system ($cmd);
+#    if ($retval!=0){
+#    	   print("Backup failed!!!");
+#    	   mailToDot($mailMessage,'WAL file adding to file system backup failed');
+#    	   exit 1;
+#   }
+#}
+
+

@@ -1,0 +1,12 @@
+#
+# puppet: ./modules/dcache_operations/templates/etc/cron.d/atlas_spacedumps.erb
+#
+#         (Attention: changes will be overwritten by puppet)
+#
+MAILTO=thomas.hartmann@desy.de
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+<% if @dcache_mon_atlas_spacetokens-%>
+0 2 25 * * grid /usr/local/bin/atlas_space_dumps.sh
+<% else %>
+# node not configured for ATLAS space tokens - avoid running multiple space token dumps - please change in hiera: dcache_mon::atlas_spacetokens
+<% end -%>

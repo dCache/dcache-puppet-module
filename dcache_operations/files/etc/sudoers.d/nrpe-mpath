@@ -1,0 +1,7 @@
+# Managed by Puppet (dcache)
+# Do NOT edit, changes will be overwritten!
+
+# for checking multipath, e.g.
+# /usr/lib64/nagios/plugins/check_multipath.pl -s -o 2 -m 2
+Defaults:nrpe !requiretty
+nrpe ALL=(root) NOPASSWD: /sbin/multipath -l, /sbin/multipath -ll

@@ -1,0 +1,12 @@
+version 2.1
+
+authorize admin read-write 1000 1000 / / /
+authorize atlasusr001 read-write 40001 4000  / / /
+authorize cmsusr001 read-write 40501 4050 / / /
+authorize cmsusr002 read-write 40502 4050 /pnfs/desy.de/cms/tier2 /pnfs/desy.de/cms/tier2 /pnfs/desy.de/cms/tier2 
+authorize cmsprd001 read-write 40751 4075 / / /
+authorize cmsana001 read-write 40951 4060 / / /
+authorize dteamusr001 read-write 43801 4380 / / /
+authorize desyusr001 read-write 43701 4370 / / /
+authorize opsusr001 read-write 43901 4390 / / /
+authorize dgopsusr000    read-write 43570 4357 / / /

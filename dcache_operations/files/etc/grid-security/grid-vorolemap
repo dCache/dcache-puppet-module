@@ -1,0 +1,123 @@
+# Managed by Puppet (dcache_operations)
+# # Do NOT edit, changes will be overwritten!
+ 
+### Revokations
+# Try to ban myself - ChW
+#"/O=GermanGrid/OU=DESY/CN=Christoph Wissing" "/cms/dcms" nouser
+#"/O=GermanGrid/OU=DESY/CN=Christoph Wissing" "/cms" nouser
+
+########## OPS ##########
+
+"*" "/ops/NGI"   opsusr001
+"*" "/ops/NGI/Switzerland" opsusr001
+"*" "/ops/Role=lcgadmin" opsusr001
+"*" "/ops/NGI"           opsusr001
+"*" "/ops/NGI/Germany"   opsusr001
+"*" "/ops/ROC"           opsusr001
+"*" "/ops/ROC/GermanySwitzerland" opsusr001
+"*" "/ops"               opsusr001
+
+########## DTEAM ##########
+
+"*" "/dteam/Role=lcgadmin" dteamusr001
+"*" "/dteam/Role=production" dteamusr001
+"*" "/dteam/dech" dteamusr001
+"*" "/dteam/dech/desy-hh" dteamusr001
+"*" "/dteam/dech/uni-dortmund" dteamusr001
+"*" "/dteam/swe" dteamusr001
+"*" "/dteam/swe/lip" dteamusr001
+"*" "/dteam" dteamusr001
+
+########### DESY ##########
+
+"*" "/desy/Role=lcgadmin" desyusr001
+"*" "/desy/Role=production" desyusr001
+"*" "/desy/it" desyusr001
+"*" "/desy/test" desyusr001
+"*" "/desy/gkss" desyusr001
+"*" "/desy/cfel" desyusr001
+"*" "/desy" desyusr001
+
+########### CMS ##########
+
+"*" "/cms/Role=lcgadmin" cmsusr
+"*" "/cms/Role=production" cmsprd001
+"*" "/cms/Role=priorityuser" cmsana001
+"*" "/cms/Role=pilot" cmsusr001
+"*" "/cms/Role=cmsphedex" cmsusr001
+"*" "/cms/Role=hiproduction" cmsprd001
+"*" "/cms/Role=t1production" cmsprd001
+"*" "/cms/dcms/Role=cmsphedex" cmsprd001
+"*" "/cms/integration" cmsusr001
+"*" "/cms/becms" cmsusr001
+"*" "/cms/dcms" cmsusr001
+"*" "/cms/escms" cmsusr001
+"*" "/cms/ptcms" cmsusr001
+"*" "/cms/itcms" cmsusr001
+"*" "/cms/frcms" cmsusr001
+"*" "/cms/production" cmsusr001
+"*" "/cms/muon" cmsusr001
+"*" "/cms/twcms" cmsusr001
+"*" "/cms/uscms" cmsusr001
+"*" "/cms/ALARM" cmsusr001
+"*" "/cms/TEAM" cmsusr001
+"*" "/cms/dbs" cmsusr001
+"*" "/cms/uscms/Role=cmsphedex" cmsusr001
+"*" "/cms" cmsusr001
+
+########### ATLAS ##########
+"*" "/atlas/Role=lcgadmin" atlasusr001
+"*" "/atlas/Role=production" atlasusr001
+"*" "/atlas/Role=pilot" atlasusr001
+"*" "/atlas/det-alfa" atlasusr001
+"*" "/atlas/au" atlasusr001
+"*" "/atlas/ca" atlasusr001
+"*" "/atlas/ch" atlasusr001
+"*" "/atlas/cn" atlasusr001
+"*" "/atlas/cz" atlasusr001
+"*" "/atlas/de" atlasusr001
+"*" "/atlas/cern" atlasusr001
+"*" "/atlas/det-indet" atlasusr001
+"*" "/atlas/det-larg" atlasusr001
+"*" "/atlas/det-muon" atlasusr001
+"*" "/atlas/det-tile" atlasusr001
+"*" "/atlas/es" atlasusr001
+"*" "/atlas/fr" atlasusr001
+"*" "/atlas/it" atlasusr001
+"*" "/atlas/jp" atlasusr001
+"*" "/atlas/lcg1" atlasusr001
+"*" "/atlas/nl" atlasusr001
+"*" "/atlas/perf-egamma" atlasusr001
+"*" "/atlas/perf-flavtag" atlasusr001
+"*" "/atlas/perf-idtracking" atlasusr001
+"*" "/atlas/perf-jets" atlasusr001
+"*" "/atlas/perf-muons" atlasusr001
+"*" "/atlas/perf-tau" atlasusr001
+"*" "/atlas/phys-beauty" atlasusr001
+"*" "/atlas/phys-exotics" atlasusr001
+"*" "/atlas/phys-gener" atlasusr001
+"*" "/atlas/phys-hi" atlasusr001
+"*" "/atlas/phys-higgs" atlasusr001
+"*" "/atlas/phys-lumin" atlasusr001
+"*" "/atlas/phys-sm" atlasusr001
+"*" "/atlas/phys-susy" atlasusr001
+"*" "/atlas/phys-top" atlasusr001
+"*" "/atlas/pl" atlasusr001
+"*" "/atlas/ru" atlasusr001
+"*" "/atlas/soft-prod" atlasusr001
+"*" "/atlas/soft-test" atlasusr001
+"*" "/atlas/soft-valid" atlasusr001
+"*" "/atlas/t0atlas" atlasusr001
+"*" "/atlas/trig-daq" atlasusr001
+"*" "/atlas/trig-pesa" atlasusr001
+"*" "/atlas/uk" atlasusr001
+"*" "/atlas/usatlas" atlasusr001
+"*" "/atlas/alarm" atlasusr001
+"*" "/atlas/team" atlasusr001
+"*" "/atlas" atlasusr001
+
+########### DGOPS VO ##########
+
+"*" "/dgops" dgopsusr000
+
+############################

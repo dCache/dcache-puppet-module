@@ -1,7 +1,0 @@
-#
-# puppet: ./modules/grid/files/etc/cron.d/srv-check-atlas-squid.cron
-#
-#         (Attention: changes will be overwritten by puppet)
-#
-MAILTO=grid-ops@desy.de
- */10 * * * * root /usr/local/bin/srv-check-atlas-squid.sh >> /var/log/srv-check-atlas-squid.log 2>&1

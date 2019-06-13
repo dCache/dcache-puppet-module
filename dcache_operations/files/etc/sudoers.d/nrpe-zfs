@@ -1,6 +1,0 @@
-# Managed by Puppet (dcache)
-# Do NOT edit, changes will be overwritten!
-
-# To list zpools via nrpe check
-Defaults:nrpe !requiretty
-nrpe ALL=(root) NOPASSWD: /sbin/zpool list*, /sbin/zpool iostat*
